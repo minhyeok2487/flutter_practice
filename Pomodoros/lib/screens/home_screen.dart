@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,8 +10,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const twentyFiveMinutes = 1500;
-  int totalSeconds = twentyFiveMinutes;
+  static const defaultMinutes = 25;
+  int minutes = defaultMinutes;
+  int totalSeconds = defaultMinutes * 60;
   bool isRunning = false;
   int totalPomodoros = 0;
   late Timer timer;
@@ -20,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         totalPomodoros = totalPomodoros + 1;
         isRunning = false;
-        totalSeconds = twentyFiveMinutes;
+        totalSeconds = minutes * 60;
       });
       timer.cancel();
     } else {
@@ -51,8 +53,65 @@ class _HomeScreenState extends State<HomeScreen> {
     timer.cancel();
     setState(() {
       isRunning = false;
-      totalSeconds = twentyFiveMinutes;
+      totalSeconds = minutes * 60;
     });
+  }
+
+  void showTimePickerDialog() {
+    if (isRunning) return; // 타이머 실행 중에는 시간 변경 불가
+
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 280,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('취소'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        totalSeconds = minutes * 60;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text('확인'),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 200,
+                child: CupertinoPicker(
+                  itemExtent: 32,
+                  scrollController: FixedExtentScrollController(
+                    initialItem: minutes - 1,
+                  ),
+                  onSelectedItemChanged: (int index) {
+                    setState(() {
+                      minutes = index + 1;
+                    });
+                  },
+                  children: List<Widget>.generate(60, (int index) {
+                    return Center(
+                      child: Text(
+                        '${index + 1}분',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   String format(int seconds) {
@@ -70,12 +129,15 @@ class _HomeScreenState extends State<HomeScreen> {
             flex: 1,
             child: Container(
               alignment: Alignment.bottomCenter,
-              child: Text(
-                format(totalSeconds),
-                style: TextStyle(
-                  color: Theme.of(context).cardColor,
-                  fontSize: 89,
-                  fontWeight: FontWeight.w600,
+              child: GestureDetector(
+                onTap: showTimePickerDialog,
+                child: Text(
+                  format(totalSeconds),
+                  style: TextStyle(
+                    color: Theme.of(context).cardColor,
+                    fontSize: 89,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
