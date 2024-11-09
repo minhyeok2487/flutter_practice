@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +18,42 @@ class _HomeScreenState extends State<HomeScreen> {
   int totalPomodoros = 0;
   late Timer timer;
 
+  // 오디오 플레이어 초기화
+  final AudioPlayer audioPlayer = AudioPlayer();
+  bool isMuted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 배경음악 설정
+    audioPlayer.setReleaseMode(ReleaseMode.loop); // 반복 재생
+    audioPlayer.setVolume(0.5); // 볼륨 설정 (0.0 ~ 1.0)
+  }
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
+  }
+
+  // 배경음악 재생/정지
+  Future<void> playBackgroundMusic() async {
+    await audioPlayer
+        .play(AssetSource('audio/campfire.mp3')); // 실제 파일 이름으로 변경하세요
+  }
+
+  Future<void> stopBackgroundMusic() async {
+    await audioPlayer.stop();
+  }
+
+  // 음소거 토글
+  void toggleMute() {
+    setState(() {
+      isMuted = !isMuted;
+      audioPlayer.setVolume(isMuted ? 0.0 : 0.5);
+    });
+  }
+
   void onTick(Timer timer) {
     if (totalSeconds == 0) {
       setState(() {
@@ -24,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         isRunning = false;
         totalSeconds = minutes * 60;
       });
+      stopBackgroundMusic();
       timer.cancel();
     } else {
       setState(() {
@@ -40,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isRunning = true;
     });
+    playBackgroundMusic();
   }
 
   void onPausePressed() {
@@ -47,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       isRunning = false;
     });
+    stopBackgroundMusic();
   }
 
   void onResetPressed() {
@@ -55,10 +95,11 @@ class _HomeScreenState extends State<HomeScreen> {
       isRunning = false;
       totalSeconds = minutes * 60;
     });
+    stopBackgroundMusic();
   }
 
   void showTimePickerDialog() {
-    if (isRunning) return; // 타이머 실행 중에는 시간 변경 불가
+    if (isRunning) return;
 
     showModalBottomSheet(
       context: context,
@@ -129,16 +170,35 @@ class _HomeScreenState extends State<HomeScreen> {
             flex: 1,
             child: Container(
               alignment: Alignment.bottomCenter,
-              child: GestureDetector(
-                onTap: showTimePickerDialog,
-                child: Text(
-                  format(totalSeconds),
-                  style: TextStyle(
-                    color: Theme.of(context).cardColor,
-                    fontSize: 89,
-                    fontWeight: FontWeight.w600,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: isRunning
+                        ? const EdgeInsets.only(left: 50)
+                        : EdgeInsets.zero,
+                    child: GestureDetector(
+                      onTap: showTimePickerDialog,
+                      child: Text(
+                        format(totalSeconds),
+                        style: TextStyle(
+                          color: Theme.of(context).cardColor,
+                          fontSize: 89,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  if (isRunning)
+                    IconButton(
+                      icon: Icon(
+                        isMuted ? Icons.volume_off : Icons.volume_up,
+                        color: Theme.of(context).cardColor,
+                        size: 40,
+                      ),
+                      onPressed: toggleMute,
+                    ),
+                ],
               ),
             ),
           ),
