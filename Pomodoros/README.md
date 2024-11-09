@@ -1,16 +1,10 @@
-# toonflix
+# 포모도로 앱
 
-A new Flutter project.
+## 설명
+- 노마드코드 Flutter로 웹툰 앱 만들기 중 POMODORO APP 파트 참고
+- 필요한 내용 추가 예정
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# 회고
+- 2024.11.10
+    - 기본 앱 (25분 기본, 재생, 일시정지, 완료시 카운트 추가)
+    - Reset추가
